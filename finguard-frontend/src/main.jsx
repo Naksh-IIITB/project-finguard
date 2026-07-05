@@ -16,6 +16,18 @@ import './styles.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+const TRANSACTION_CATEGORIES = [
+  'Groceries',
+  'Entertainment',
+  'Travel',
+  'Utilities',
+  'Food',
+  'Shopping',
+  'Health',
+  'Education',
+  'Other',
+];
+
 const initialTransactionForm = {
   amount: '',
   category: 'Groceries',
@@ -368,14 +380,9 @@ function TransactionForm({ onSubmit, loading }) {
         <label>
           Category
           <select value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })}>
-            <option>Groceries</option>
-            <option>Entertainment</option>
-            <option>Travel</option>
-            <option>Utilities</option>
-            <option>Food</option>
-            <option>Shopping</option>
-            <option>Health</option>
-            <option>Education</option>
+            {TRANSACTION_CATEGORIES.map((category) => (
+              <option key={category}>{category}</option>
+            ))}
           </select>
         </label>
         <label>
