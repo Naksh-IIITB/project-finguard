@@ -4,12 +4,33 @@ FinGuard is a learning-focused fintech project that simulates a smart expense tr
 The backend owns the business rules and database, while a separate AI service scores
 transactions for unusual or suspicious behavior.
 
+## Quick Start
+
+Run the full stack with Docker:
+
+```bash
+docker compose up --build
+```
+
+Then open:
+
+```text
+http://localhost:3000
+```
+
+Run local checks without Docker:
+
+```bash
+scripts/check-local.sh
+```
+
 ## Services
 
 - `finguard-core-backend`: Spring Boot API, authentication, transaction logic, and database access.
 - `finguard-ai-engine`: FastAPI service that scores transactions using an anomaly detection model.
 - `finguard-frontend`: React/Vue client for dashboards, forms, and transaction review.
 - `docs`: Architecture notes, API contracts, and database design.
+- `scripts`: Local helper commands for running and checking services.
 
 ## Target Flow
 
@@ -163,4 +184,14 @@ Frontend: http://localhost:3000
 Backend:  http://localhost:8080
 AI:       http://localhost:8000
 Postgres: localhost:5432
+```
+
+## Step 12 Final Polish
+
+Project helper docs and scripts are available in:
+
+```text
+docs/project-summary.md
+scripts/
+.env.example
 ```
