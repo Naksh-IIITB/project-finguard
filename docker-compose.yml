@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: finguard-postgres
+    environment:
+      POSTGRES_DB: finguard
+      POSTGRES_USER: finguard
+      POSTGRES_PASSWORD: finguard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
