@@ -2,15 +2,66 @@
 
 This file records the request and response shapes before we implement them.
 
-## Create Transaction
+## Register
 
 ```http
-POST /api/transactions
+POST /api/auth/register
 ```
 
 ```json
 {
+  "username": "demo",
+  "email": "demo@finguard.local",
+  "password": "password123"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "jwt-token",
+  "tokenType": "Bearer",
   "userId": 1,
+  "username": "demo",
+  "email": "demo@finguard.local"
+}
+```
+
+## Login
+
+```http
+POST /api/auth/login
+```
+
+```json
+{
+  "usernameOrEmail": "demo",
+  "password": "password123"
+}
+```
+
+Response:
+
+```json
+{
+  "token": "jwt-token",
+  "tokenType": "Bearer",
+  "userId": 1,
+  "username": "demo",
+  "email": "demo@finguard.local"
+}
+```
+
+## Create Transaction
+
+```http
+POST /api/transactions
+Authorization: Bearer <token>
+```
+
+```json
+{
   "amount": 2500.0,
   "category": "Entertainment",
   "merchant": "BookMyShow",
@@ -34,14 +85,13 @@ Response:
 }
 ```
 
-For Step 4, the frontend sends `userId` directly because authentication has not
-been implemented yet. After the auth step, the backend will get the user from
-the logged-in session/JWT instead.
+The frontend no longer sends `userId`. The backend gets the user from the JWT.
 
-## List Transactions for a User
+## List My Transactions
 
 ```http
-GET /api/transactions?userId=1
+GET /api/transactions
+Authorization: Bearer <token>
 ```
 
 Response:
@@ -66,6 +116,7 @@ Response:
 
 ```http
 GET /api/transactions/1
+Authorization: Bearer <token>
 ```
 
 ## AI Risk Prediction

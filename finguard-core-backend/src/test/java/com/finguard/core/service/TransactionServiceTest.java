@@ -45,7 +45,6 @@ class TransactionServiceTest {
 
         LocalDateTime transactionTime = LocalDateTime.of(2026, 7, 5, 10, 30);
         CreateTransactionRequest request = new CreateTransactionRequest(
-                1L,
                 new BigDecimal("2500.00"),
                 "Entertainment",
                 "BookMyShow",
@@ -59,7 +58,7 @@ class TransactionServiceTest {
             return transaction;
         });
 
-        TransactionResponse response = transactionService.createTransaction(request);
+        TransactionResponse response = transactionService.createTransaction(1L, request);
 
         assertEquals(99L, response.id());
         assertEquals(1L, response.userId());
@@ -76,7 +75,6 @@ class TransactionServiceTest {
     @Test
     void createTransactionFailsWhenUserDoesNotExist() {
         CreateTransactionRequest request = new CreateTransactionRequest(
-                999L,
                 new BigDecimal("100.00"),
                 "Groceries",
                 "Local Store",
@@ -85,6 +83,6 @@ class TransactionServiceTest {
 
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> transactionService.createTransaction(request));
+        assertThrows(ResourceNotFoundException.class, () -> transactionService.createTransaction(999L, request));
     }
 }

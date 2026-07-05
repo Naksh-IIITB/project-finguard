@@ -9,8 +9,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public record CreateTransactionRequest(
-        @NotNull Long userId,
-
         @NotNull
         @DecimalMin(value = "0.01", message = "amount must be greater than 0")
         BigDecimal amount,

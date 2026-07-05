@@ -52,12 +52,21 @@ The backend now has transaction endpoints:
 
 ```http
 POST /api/transactions
-GET /api/transactions?userId=1
+GET /api/transactions
 GET /api/transactions/1
 ```
 
-For local manual testing before authentication exists, create a demo user with:
+These endpoints are protected after Step 5. Call `POST /api/auth/register` or
+`POST /api/auth/login` first, then send `Authorization: Bearer <token>`.
 
-```bash
-psql postgresql://finguard:finguard@localhost:5432/finguard -f scripts/seed-demo-user.sql
+## Step 5 Auth API
+
+The backend now has auth endpoints:
+
+```http
+POST /api/auth/register
+POST /api/auth/login
 ```
+
+Passwords are hashed with BCrypt before being stored. The raw password should
+never be saved in the database.

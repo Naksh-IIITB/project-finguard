@@ -24,9 +24,9 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponse createTransaction(CreateTransactionRequest request) {
-        User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.userId()));
+    public TransactionResponse createTransaction(Long userId, CreateTransactionRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
         Transaction transaction = new Transaction(
                 user,
@@ -52,8 +52,8 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public TransactionResponse getTransaction(Long transactionId) {
-        return transactionRepository.findById(transactionId)
+    public TransactionResponse getTransaction(Long userId, Long transactionId) {
+        return transactionRepository.findByIdAndUserId(transactionId, userId)
                 .map(TransactionResponse::from)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found: " + transactionId));
     }

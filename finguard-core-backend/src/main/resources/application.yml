@@ -22,5 +22,8 @@ server:
   port: 8080
 
 finguard:
+  jwt:
+    secret: ${FINGUARD_JWT_SECRET:change-this-dev-secret-change-this-dev-secret}
+    expiration-minutes: 60
   ai-service:
     base-url: http://localhost:8000
