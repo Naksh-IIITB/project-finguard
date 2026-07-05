@@ -147,3 +147,20 @@ npm run dev
 
 The frontend talks to Spring Boot at `http://localhost:8080` by default. Override
 that with `VITE_API_BASE_URL` if needed.
+
+## Step 11 Full Local Stack
+
+Run all services with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+URLs:
+
+```text
+Frontend: http://localhost:3000
+Backend:  http://localhost:8080
+AI:       http://localhost:8000
+Postgres: localhost:5432
+```

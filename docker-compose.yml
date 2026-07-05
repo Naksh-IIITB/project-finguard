@@ -10,7 +10,47 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U finguard -d finguard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ai-engine:
+    build:
+      context: ./finguard-ai-engine
+    container_name: finguard-ai-engine
+    ports:
+      - "8000:8000"
+
+  core-backend:
+    build:
+      context: ./finguard-core-backend
+    container_name: finguard-core-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finguard
+      SPRING_DATASOURCE_USERNAME: finguard
+      SPRING_DATASOURCE_PASSWORD: finguard
+      FINGUARD_AI_SERVICE_BASE_URL: http://ai-engine:8000
+      FINGUARD_JWT_SECRET: change-this-dev-secret-change-this-dev-secret
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-engine:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./finguard-frontend
+      args:
+        VITE_API_BASE_URL: http://localhost:8080
+    container_name: finguard-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - core-backend
 
 volumes:
   postgres_data:
-
