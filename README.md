@@ -43,5 +43,21 @@ cd finguard-core-backend
 mvn test
 ```
 
-This compiles the backend and runs tests. The full server will need PostgreSQL
-running once we add database migrations and real entities.
+This compiles the backend and runs tests. The full server now expects PostgreSQL
+because the backend has database migrations and real entities.
+
+## Step 4 Transaction API
+
+The backend now has transaction endpoints:
+
+```http
+POST /api/transactions
+GET /api/transactions?userId=1
+GET /api/transactions/1
+```
+
+For local manual testing before authentication exists, create a demo user with:
+
+```bash
+psql postgresql://finguard:finguard@localhost:5432/finguard -f scripts/seed-demo-user.sql
+```

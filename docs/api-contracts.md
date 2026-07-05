@@ -10,11 +10,62 @@ POST /api/transactions
 
 ```json
 {
+  "userId": 1,
   "amount": 2500.0,
   "category": "Entertainment",
   "merchant": "BookMyShow",
-  "timestamp": "2026-07-05T10:30:00"
+  "transactionTime": "2026-07-05T10:30:00"
 }
+```
+
+Response:
+
+```json
+{
+  "id": 1,
+  "userId": 1,
+  "amount": 2500.0,
+  "category": "Entertainment",
+  "merchant": "BookMyShow",
+  "transactionTime": "2026-07-05T10:30:00",
+  "flagged": false,
+  "riskScore": 0.0,
+  "createdAt": "2026-07-05T10:31:00"
+}
+```
+
+For Step 4, the frontend sends `userId` directly because authentication has not
+been implemented yet. After the auth step, the backend will get the user from
+the logged-in session/JWT instead.
+
+## List Transactions for a User
+
+```http
+GET /api/transactions?userId=1
+```
+
+Response:
+
+```json
+[
+  {
+    "id": 1,
+    "userId": 1,
+    "amount": 2500.0,
+    "category": "Entertainment",
+    "merchant": "BookMyShow",
+    "transactionTime": "2026-07-05T10:30:00",
+    "flagged": false,
+    "riskScore": 0.0,
+    "createdAt": "2026-07-05T10:31:00"
+  }
+]
+```
+
+## Get One Transaction
+
+```http
+GET /api/transactions/1
 ```
 
 ## AI Risk Prediction
@@ -40,4 +91,3 @@ POST /predict
   "is_anomaly": true
 }
 ```
-
