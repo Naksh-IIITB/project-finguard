@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: finguard-core-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/finguard
+    username: finguard
+    password: finguard
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+
+server:
+  port: 8080
+
+finguard:
+  ai-service:
+    base-url: http://localhost:8000

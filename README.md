@@ -34,3 +34,14 @@ Frontend -> Spring Boot Backend -> PostgreSQL
 10. Build the frontend.
 11. Run everything with Docker Compose.
 
+## Backend Build
+
+From the Spring Boot backend folder:
+
+```bash
+cd finguard-core-backend
+mvn test
+```
+
+This compiles the backend and runs tests. The full server will need PostgreSQL
+running once we add database migrations and real entities.
