@@ -70,3 +70,14 @@ POST /api/auth/login
 
 Passwords are hashed with BCrypt before being stored. The raw password should
 never be saved in the database.
+
+## Step 6 Spending Profile API
+
+The backend now calculates spending profile metrics:
+
+```http
+GET /api/profile/spending
+GET /api/profile/transaction-context?amount=2500.00&category=Entertainment
+```
+
+Both endpoints require `Authorization: Bearer <token>`.

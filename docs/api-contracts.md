@@ -119,6 +119,49 @@ GET /api/transactions/1
 Authorization: Bearer <token>
 ```
 
+## Get Spending Profile
+
+```http
+GET /api/profile/spending
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "userId": 1,
+  "transactionCount": 12,
+  "averageTransactionAmount": 845.25,
+  "currentMonthSpend": 6400.75,
+  "month": "2026-07"
+}
+```
+
+## Build Transaction Context
+
+```http
+GET /api/profile/transaction-context?amount=2500.00&category=Entertainment
+Authorization: Bearer <token>
+```
+
+Response:
+
+```json
+{
+  "userId": 1,
+  "amount": 2500.00,
+  "category": "Entertainment",
+  "averageTransactionAmount": 200.00,
+  "categoryAverageAmount": 500.00,
+  "amountVsAverage": 12.5000,
+  "amountVsCategoryAverage": 5.0000
+}
+```
+
+These context fields are not the final AI output. They are the historical
+features that the backend can later send to the FastAPI AI service.
+
 ## AI Risk Prediction
 
 ```http
