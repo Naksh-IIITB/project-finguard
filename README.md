@@ -81,3 +81,22 @@ GET /api/profile/transaction-context?amount=2500.00&category=Entertainment
 ```
 
 Both endpoints require `Authorization: Bearer <token>`.
+
+## Step 7 AI Service
+
+The Python AI service exposes:
+
+```http
+GET /health
+POST /predict
+```
+
+Run it locally with:
+
+```bash
+cd finguard-ai-engine
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```

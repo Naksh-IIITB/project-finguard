@@ -173,7 +173,7 @@ POST /predict
   "transaction_id": 1024,
   "amount": 2500.0,
   "hour_of_day": 10,
-  "category": "Entertainment",
+  "category_encoded": 3,
   "amount_vs_avg": 3.4
 }
 ```
