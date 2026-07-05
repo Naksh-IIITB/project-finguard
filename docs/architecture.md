@@ -21,3 +21,17 @@ FastAPI AI Service
 - PostgreSQL stores users and transactions.
 - The FastAPI service receives transaction features and returns risk metrics.
 
+## Data Ownership
+
+Spring Boot is the only service that writes to PostgreSQL.
+
+This is important because the backend must protect the rules of the system:
+
+- A transaction must belong to a real user.
+- A transaction amount must be valid.
+- A transaction should be saved with the AI risk result.
+- A user's password must be stored as a hash, never plain text.
+
+The AI service is intentionally stateless for the first version. It receives a
+request, calculates risk, returns a response, and does not save the transaction.
+That keeps the architecture easier to reason about.
