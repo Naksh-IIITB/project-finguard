@@ -14,6 +14,22 @@ FastAPI AI Service
   -> Saved model.pkl
 ```
 
+## Transaction Scoring Flow
+
+```text
+Frontend
+  -> POST /api/transactions
+Spring Boot
+  -> validates authenticated user
+  -> builds transaction context from spending history
+  -> encodes category
+  -> POST /predict to FastAPI
+FastAPI
+  -> returns risk_score and is_anomaly
+Spring Boot
+  -> saves transaction with risk_score and is_flagged
+```
+
 ## Responsibility Split
 
 - The frontend displays data and collects user input.

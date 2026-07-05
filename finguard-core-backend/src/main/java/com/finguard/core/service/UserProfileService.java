@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 
 @Service
-public class UserProfileService {
+public class UserProfileService implements TransactionContextProvider {
 
     private static final int MONEY_SCALE = 2;
     private static final int RATIO_SCALE = 4;
@@ -45,6 +45,7 @@ public class UserProfileService {
     }
 
     @Transactional(readOnly = true)
+    @Override
     public TransactionContextResponse buildTransactionContext(Long userId, BigDecimal amount, String category) {
         ensureUserExists(userId);
 

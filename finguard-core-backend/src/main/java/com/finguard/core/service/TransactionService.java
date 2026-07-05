@@ -1,5 +1,7 @@
 package com.finguard.core.service;
 
+import com.finguard.core.dto.AiRiskRequest;
+import com.finguard.core.dto.AiRiskResponse;
 import com.finguard.core.dto.CreateTransactionRequest;
 import com.finguard.core.dto.TransactionResponse;
 import com.finguard.core.entity.Transaction;
@@ -10,17 +12,33 @@ import com.finguard.core.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
 public class TransactionService {
 
+    private static final int TEMP_TRANSACTION_ID = 1;
+
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
+    private final TransactionContextProvider transactionContextProvider;
+    private final CategoryEncoder categoryEncoder;
+    private final RiskClient riskClient;
 
-    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository) {
+    public TransactionService(
+            TransactionRepository transactionRepository,
+            UserRepository userRepository,
+            TransactionContextProvider transactionContextProvider,
+            CategoryEncoder categoryEncoder,
+            RiskClient riskClient
+    ) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
+        this.transactionContextProvider = transactionContextProvider;
+        this.categoryEncoder = categoryEncoder;
+        this.riskClient = riskClient;
     }
 
     @Transactional
@@ -36,7 +54,24 @@ public class TransactionService {
                 request.transactionTime()
         );
 
+        AiRiskResponse riskResponse = riskClient.predictRisk(buildAiRiskRequest(userId, request));
+        transaction.applyRiskResult(riskResponse.riskScore(), riskResponse.anomaly());
+
         return TransactionResponse.from(transactionRepository.save(transaction));
+    }
+
+    private AiRiskRequest buildAiRiskRequest(Long userId, CreateTransactionRequest request) {
+        BigDecimal amountVsAverage = transactionContextProvider
+                .buildTransactionContext(userId, request.amount(), request.category())
+                .amountVsAverage();
+
+        return new AiRiskRequest(
+                (long) TEMP_TRANSACTION_ID,
+                request.amount().doubleValue(),
+                request.transactionTime().getHour(),
+                categoryEncoder.encode(request.category()),
+                amountVsAverage.setScale(4, RoundingMode.HALF_UP).doubleValue()
+        );
     }
 
     @Transactional(readOnly = true)

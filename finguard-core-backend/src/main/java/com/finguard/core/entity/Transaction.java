@@ -60,6 +60,11 @@ public class Transaction {
         this.createdAt = LocalDateTime.now();
     }
 
+    public void applyRiskResult(double riskScore, boolean flagged) {
+        this.riskScore = riskScore;
+        this.flagged = flagged;
+    }
+
     public Long getId() {
         return id;
     }

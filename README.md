@@ -100,3 +100,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
+
+## Step 8 Backend to AI Integration
+
+Transaction creation now calls the AI service before saving:
+
+```text
+POST /api/transactions
+  -> Spring Boot builds AI features
+  -> Spring Boot calls FastAPI POST /predict
+  -> Spring Boot saves riskScore and flagged
+```
+
+Run the AI service on port `8000` before testing transaction creation locally.
