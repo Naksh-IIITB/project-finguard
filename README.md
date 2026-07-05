@@ -128,3 +128,22 @@ Retrain the model with:
 cd finguard-ai-engine
 .venv/bin/python ml/train_model.py
 ```
+
+## Step 10 Frontend
+
+The React frontend lives in:
+
+```text
+finguard-frontend
+```
+
+Run it with:
+
+```bash
+cd finguard-frontend
+npm install
+npm run dev
+```
+
+The frontend talks to Spring Boot at `http://localhost:8080` by default. Override
+that with `VITE_API_BASE_URL` if needed.
