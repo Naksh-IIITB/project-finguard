@@ -113,3 +113,18 @@ POST /api/transactions
 ```
 
 Run the AI service on port `8000` before testing transaction creation locally.
+
+## Step 9 ML Model
+
+The AI service now loads a saved Isolation Forest model:
+
+```text
+finguard-ai-engine/ml/model.pkl
+```
+
+Retrain the model with:
+
+```bash
+cd finguard-ai-engine
+.venv/bin/python ml/train_model.py
+```

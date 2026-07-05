@@ -1,32 +1,32 @@
 from app.models.schemas import PredictionRequest, PredictionResponse
+from app.config import MODEL_PATH
+from app.services.feature_builder import build_feature_vector
+import joblib
+
+_model = None
+
+
+def load_model():
+    global _model
+    if _model is None:
+        _model = joblib.load(MODEL_PATH)
+    return _model
 
 
 def score_transaction(request: PredictionRequest) -> PredictionResponse:
-    risk_score = calculate_mock_risk_score(request)
+    model = load_model()
+    features = [build_feature_vector(request)]
+    prediction = model.predict(features)[0]
+    anomaly_score = model.decision_function(features)[0]
+    risk_score = convert_anomaly_score_to_risk(anomaly_score)
 
     return PredictionResponse(
         transaction_id=request.transaction_id,
         risk_score=risk_score,
-        is_anomaly=risk_score >= 0.70,
+        is_anomaly=bool(prediction == -1),
     )
 
 
-def calculate_mock_risk_score(request: PredictionRequest) -> float:
-    score = 0.10
-
-    if request.amount_vs_avg >= 5:
-        score += 0.55
-    elif request.amount_vs_avg >= 3:
-        score += 0.35
-    elif request.amount_vs_avg >= 2:
-        score += 0.20
-
-    if request.amount >= 5000:
-        score += 0.20
-    elif request.amount >= 2500:
-        score += 0.10
-
-    if request.hour_of_day < 5:
-        score += 0.10
-
-    return round(min(score, 1.0), 4)
+def convert_anomaly_score_to_risk(anomaly_score: float) -> float:
+    risk = 0.5 - anomaly_score
+    return round(max(0.0, min(1.0, risk)), 4)

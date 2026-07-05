@@ -14,7 +14,8 @@ def test_low_risk_transaction_is_not_anomaly():
     response = score_transaction(request)
 
     assert response.transaction_id == 1
-    assert response.risk_score == 0.10
+    assert 0 <= response.risk_score <= 1
+    assert response.risk_score < 0.60
     assert response.is_anomaly is False
 
 
@@ -29,5 +30,5 @@ def test_high_ratio_transaction_is_anomaly():
 
     response = score_transaction(request)
 
-    assert response.risk_score == 0.95
+    assert response.risk_score > 0.50
     assert response.is_anomaly is True

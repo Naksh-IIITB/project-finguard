@@ -79,8 +79,8 @@ Response:
   "category": "Entertainment",
   "merchant": "BookMyShow",
   "transactionTime": "2026-07-05T10:30:00",
-  "flagged": false,
-  "riskScore": 0.0,
+  "flagged": true,
+  "riskScore": 0.82,
   "createdAt": "2026-07-05T10:31:00"
 }
 ```
@@ -105,8 +105,8 @@ Response:
     "category": "Entertainment",
     "merchant": "BookMyShow",
     "transactionTime": "2026-07-05T10:30:00",
-    "flagged": false,
-    "riskScore": 0.0,
+    "flagged": true,
+    "riskScore": 0.82,
     "createdAt": "2026-07-05T10:31:00"
   }
 ]
@@ -181,7 +181,7 @@ POST /predict
 ```json
 {
   "transaction_id": 1024,
-  "risk_score": 0.87,
+  "risk_score": 0.82,
   "is_anomaly": true
 }
 ```
