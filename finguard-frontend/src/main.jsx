@@ -1,15 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
-  Activity,
   AlertTriangle,
   ArrowRight,
   BadgeCheck,
   CircleDollarSign,
+  Eye,
   LogOut,
   Plus,
   RefreshCw,
   Shield,
+  ShieldAlert,
+  ShieldCheck,
   WalletCards,
 } from 'lucide-react';
 import './styles.css';
@@ -73,6 +75,9 @@ function App() {
     () => transactions.filter((transaction) => transaction.flagged).length,
     [transactions],
   );
+
+  const latestSignal = transactions[0];
+  const safetyState = latestSignal?.riskLevel || (flaggedCount > 0 ? 'Attention' : 'Stable');
 
   const totalVisibleSpend = useMemo(
     () => transactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0),
@@ -170,8 +175,8 @@ function App() {
       <section className="workspace">
         <header className="topbar">
           <div>
-            <p className="eyebrow">Smart expense tracker</p>
-            <h2>Risk-aware spending dashboard</h2>
+            <p className="eyebrow">AI financial safety companion</p>
+            <h2>Monitor transactions, detect risk, and choose the safest next step.</h2>
           </div>
           <button className="icon-button" type="button" onClick={loadDashboard} title="Refresh dashboard">
             <RefreshCw size={19} />
@@ -186,31 +191,34 @@ function App() {
 
         <section className="metrics-grid" id="overview">
           <Metric
-            icon={<CircleDollarSign size={21} />}
-            label="Month spend"
-            value={formatMoney(profile?.currentMonthSpend || 0)}
-          />
-          <Metric
-            icon={<Activity size={21} />}
-            label="Average transaction"
-            value={formatMoney(profile?.averageTransactionAmount || 0)}
-          />
-          <Metric
-            icon={<WalletCards size={21} />}
-            label="Transactions"
-            value={profile?.transactionCount ?? transactions.length}
+            icon={safetyState === 'Stable' ? <ShieldCheck size={21} /> : <ShieldAlert size={21} />}
+            label="Safety state"
+            value={safetyState}
+            tone={safetyState === 'Stable' ? 'ok' : 'alert'}
           />
           <Metric
             icon={<AlertTriangle size={21} />}
-            label="Flagged"
+            label="Signals needing review"
             value={flaggedCount}
             tone={flaggedCount > 0 ? 'alert' : 'ok'}
           />
+          <Metric
+            icon={<WalletCards size={21} />}
+            label="Transactions monitored"
+            value={profile?.transactionCount ?? transactions.length}
+          />
+          <Metric
+            icon={<CircleDollarSign size={21} />}
+            label="Month watched"
+            value={formatMoney(profile?.currentMonthSpend || 0)}
+          />
         </section>
+
+        <SafetyBrief transaction={latestSignal} totalVisibleSpend={totalVisibleSpend} />
 
         <section className="content-grid">
           <TransactionForm onSubmit={createTransaction} loading={loading} />
-          <RiskPanel transactions={transactions} totalVisibleSpend={totalVisibleSpend} />
+          <RiskPanel transactions={transactions} />
         </section>
 
         <TransactionTable transactions={transactions} loading={loading} />
@@ -259,18 +267,22 @@ function AuthScreen({ onAuth }) {
           </div>
           <h1>FinGuard</h1>
         </div>
+        <p className="auth-promise">
+          An AI safety layer for your money: it watches transaction patterns, explains what changed,
+          and points you to the lowest-risk next move.
+        </p>
         <div className="signal-board" aria-hidden="true">
           <div className="signal-row strong">
-            <span>Risk score</span>
-            <b>0.18</b>
+            <span>Safety state</span>
+            <b>Stable</b>
           </div>
           <div className="signal-row alert">
             <span>Unusual payment</span>
-            <b>0.82</b>
+            <b>Review</b>
           </div>
           <div className="signal-row">
-            <span>Monthly trend</span>
-            <b>+12%</b>
+            <span>Safest next step</span>
+            <b>Verify</b>
           </div>
         </div>
       </section>
@@ -350,6 +362,31 @@ function Metric({ icon, label, value, tone }) {
   );
 }
 
+function SafetyBrief({ transaction, totalVisibleSpend }) {
+  const hasSignal = Boolean(transaction);
+  return (
+    <section className={`safety-brief ${transaction?.flagged ? 'alert' : ''}`}>
+      <div className="brief-main">
+        <div className="brief-icon" aria-hidden="true">
+          {transaction?.flagged ? <ShieldAlert size={24} /> : <ShieldCheck size={24} />}
+        </div>
+        <div>
+          <p className="eyebrow">Latest safety read</p>
+          <h3>{hasSignal ? transaction.whatChanged : 'FinGuard is ready to monitor your first transaction.'}</h3>
+        </div>
+      </div>
+      <div className="brief-action">
+        <span>Safest next step</span>
+        <strong>{hasSignal ? transaction.safestNextStep : 'Add a transaction to establish your baseline.'}</strong>
+      </div>
+      <div className="brief-stat">
+        <span>Visible spend watched</span>
+        <strong>{formatMoney(totalVisibleSpend)}</strong>
+      </div>
+    </section>
+  );
+}
+
 function TransactionForm({ onSubmit, loading }) {
   const [form, setForm] = useState(initialTransactionForm);
 
@@ -362,7 +399,7 @@ function TransactionForm({ onSubmit, loading }) {
   return (
     <section className="panel" id="new-transaction">
       <div className="section-heading">
-        <h3>New transaction</h3>
+        <h3>Add transaction to monitor</h3>
         <Plus size={20} />
       </div>
       <form className="transaction-form" onSubmit={submit}>
@@ -403,7 +440,7 @@ function TransactionForm({ onSubmit, loading }) {
           />
         </label>
         <button className="primary-button" type="submit" disabled={loading}>
-          Save
+          Monitor
           <BadgeCheck size={18} />
         </button>
       </form>
@@ -411,24 +448,28 @@ function TransactionForm({ onSubmit, loading }) {
   );
 }
 
-function RiskPanel({ transactions, totalVisibleSpend }) {
+function RiskPanel({ transactions }) {
   const latest = transactions[0];
   return (
     <section className="panel risk-panel">
       <div className="section-heading">
-        <h3>Risk signal</h3>
-        <Shield size={20} />
+        <h3>Signal detail</h3>
+        <Eye size={20} />
       </div>
       <div className="risk-meter" style={{ '--risk': latest ? latest.riskScore : 0 }}>
         <span>{latest ? Math.round(latest.riskScore * 100) : 0}</span>
       </div>
       <div className="risk-copy">
-        <strong>{latest?.flagged ? 'Flagged transaction' : 'No current flag'}</strong>
-        <p>{latest ? latest.merchant : 'No transactions yet'}</p>
+        <strong>{latest?.riskLevel || 'Stable'} risk score</strong>
+        <p>{latest ? `${latest.merchant} · ${latest.category}` : 'No transactions yet'}</p>
       </div>
-      <div className="mini-stats">
-        <span>Visible spend</span>
-        <strong>{formatMoney(totalVisibleSpend)}</strong>
+      <div className="next-step-card">
+        <span>What changed</span>
+        <strong>{latest?.whatChanged || 'No unusual change detected yet.'}</strong>
+      </div>
+      <div className="next-step-card">
+        <span>Next step</span>
+        <strong>{latest?.safestNextStep || 'Start monitoring by adding a transaction.'}</strong>
       </div>
     </section>
   );
@@ -449,6 +490,7 @@ function TransactionTable({ transactions, loading }) {
               <th>Category</th>
               <th>Time</th>
               <th>Amount</th>
+              <th>AI read</th>
               <th>Risk</th>
               <th>Status</th>
             </tr>
@@ -456,7 +498,7 @@ function TransactionTable({ transactions, loading }) {
           <tbody>
             {transactions.length === 0 ? (
               <tr>
-                <td colSpan="6" className="empty-cell">No transactions</td>
+                <td colSpan="7" className="empty-cell">No transactions</td>
               </tr>
             ) : (
               transactions.map((transaction) => (
@@ -465,6 +507,7 @@ function TransactionTable({ transactions, loading }) {
                   <td>{transaction.category}</td>
                   <td>{formatDate(transaction.transactionTime)}</td>
                   <td>{formatMoney(transaction.amount)}</td>
+                  <td>{transaction.riskLevel || 'Stable'}</td>
                   <td>{Math.round(transaction.riskScore * 100)}%</td>
                   <td>
                     <span className={transaction.flagged ? 'pill alert' : 'pill ok'}>

@@ -14,6 +14,9 @@ public record TransactionResponse(
         LocalDateTime transactionTime,
         boolean flagged,
         double riskScore,
+        String riskLevel,
+        String whatChanged,
+        String safestNextStep,
         LocalDateTime createdAt
 ) {
 
@@ -27,6 +30,9 @@ public record TransactionResponse(
                 transaction.getTransactionTime(),
                 transaction.isFlagged(),
                 transaction.getRiskScore(),
+                transaction.getRiskLevel(),
+                transaction.getWhatChanged(),
+                transaction.getSafestNextStep(),
                 transaction.getCreatedAt()
         );
     }

@@ -17,6 +17,8 @@ def test_low_risk_transaction_is_not_anomaly():
     assert 0 <= response.risk_score <= 1
     assert response.risk_score < 0.60
     assert response.is_anomaly is False
+    assert response.risk_level in {"Stable", "Watch"}
+    assert "normal transaction history" in response.what_changed
 
 
 def test_high_ratio_transaction_is_anomaly():
@@ -32,3 +34,6 @@ def test_high_ratio_transaction_is_anomaly():
 
     assert response.risk_score > 0.50
     assert response.is_anomaly is True
+    assert response.risk_level == "Urgent"
+    assert "usual category average" in response.what_changed
+    assert "Verify the merchant now" in response.safest_next_step

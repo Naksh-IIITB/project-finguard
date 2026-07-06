@@ -76,7 +76,14 @@ class TransactionServiceTest {
                         new BigDecimal("12.5000"),
                         new BigDecimal("5.0000")
                 ));
-        when(riskClient.predictRisk(any())).thenReturn(new AiRiskResponse(1L, 0.87, true));
+        when(riskClient.predictRisk(any())).thenReturn(new AiRiskResponse(
+                1L,
+                0.87,
+                true,
+                "Urgent",
+                "Urgent signal: amount is 12.5x your usual category average.",
+                "Verify the merchant now, freeze the card if this was not you, and contact support before more charges post."
+        ));
         when(transactionRepository.save(any(Transaction.class))).thenAnswer(invocation -> {
             Transaction transaction = invocation.getArgument(0);
             ReflectionTestUtils.setField(transaction, "id", 99L);
@@ -90,6 +97,8 @@ class TransactionServiceTest {
         assertEquals(new BigDecimal("2500.00"), response.amount());
         assertTrue(response.flagged());
         assertEquals(0.87, response.riskScore());
+        assertEquals("Urgent", response.riskLevel());
+        assertEquals("Urgent signal: amount is 12.5x your usual category average.", response.whatChanged());
 
         ArgumentCaptor<Transaction> transactionCaptor = ArgumentCaptor.forClass(Transaction.class);
         verify(transactionRepository).save(transactionCaptor.capture());
@@ -97,6 +106,7 @@ class TransactionServiceTest {
         assertEquals("BookMyShow", transactionCaptor.getValue().getMerchant());
         assertTrue(transactionCaptor.getValue().isFlagged());
         assertEquals(0.87, transactionCaptor.getValue().getRiskScore());
+        assertEquals("Urgent", transactionCaptor.getValue().getRiskLevel());
 
         ArgumentCaptor<AiRiskRequest> aiRequestCaptor = ArgumentCaptor.forClass(AiRiskRequest.class);
         verify(riskClient).predictRisk(aiRequestCaptor.capture());

@@ -10,6 +10,15 @@ public record AiRiskResponse(
         double riskScore,
 
         @JsonProperty("is_anomaly")
-        boolean anomaly
+        boolean anomaly,
+
+        @JsonProperty("risk_level")
+        String riskLevel,
+
+        @JsonProperty("what_changed")
+        String whatChanged,
+
+        @JsonProperty("safest_next_step")
+        String safestNextStep
 ) {
 }

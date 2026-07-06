@@ -55,7 +55,13 @@ public class TransactionService {
         );
 
         AiRiskResponse riskResponse = riskClient.predictRisk(buildAiRiskRequest(userId, request));
-        transaction.applyRiskResult(riskResponse.riskScore(), riskResponse.anomaly());
+        transaction.applyRiskResult(
+                riskResponse.riskScore(),
+                riskResponse.anomaly(),
+                riskResponse.riskLevel(),
+                riskResponse.whatChanged(),
+                riskResponse.safestNextStep()
+        );
 
         return TransactionResponse.from(transactionRepository.save(transaction));
     }

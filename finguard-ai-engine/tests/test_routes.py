@@ -28,3 +28,6 @@ def test_predict_endpoint():
     assert body["transaction_id"] == 1024
     assert 0 <= body["risk_score"] <= 1
     assert isinstance(body["is_anomaly"], bool)
+    assert body["risk_level"] in {"Stable", "Watch", "Attention", "Urgent"}
+    assert body["what_changed"]
+    assert body["safest_next_step"]

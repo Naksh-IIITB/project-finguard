@@ -13,3 +13,6 @@ class PredictionResponse(BaseModel):
     transaction_id: int
     risk_score: float = Field(ge=0, le=1)
     is_anomaly: bool
+    risk_level: str
+    what_changed: str
+    safest_next_step: str

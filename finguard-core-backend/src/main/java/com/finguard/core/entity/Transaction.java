@@ -43,6 +43,15 @@ public class Transaction {
     @Column(name = "risk_score", nullable = false)
     private double riskScore;
 
+    @Column(name = "risk_level", nullable = false, length = 24)
+    private String riskLevel;
+
+    @Column(name = "what_changed", nullable = false, length = 320)
+    private String whatChanged;
+
+    @Column(name = "safest_next_step", nullable = false, length = 360)
+    private String safestNextStep;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -57,12 +66,24 @@ public class Transaction {
         this.transactionTime = transactionTime;
         this.flagged = false;
         this.riskScore = 0.0;
+        this.riskLevel = "Stable";
+        this.whatChanged = "Stable signal: pattern is close to your normal transaction history.";
+        this.safestNextStep = "No action needed; keep monitoring for changes.";
         this.createdAt = LocalDateTime.now();
     }
 
-    public void applyRiskResult(double riskScore, boolean flagged) {
+    public void applyRiskResult(
+            double riskScore,
+            boolean flagged,
+            String riskLevel,
+            String whatChanged,
+            String safestNextStep
+    ) {
         this.riskScore = riskScore;
         this.flagged = flagged;
+        this.riskLevel = riskLevel;
+        this.whatChanged = whatChanged;
+        this.safestNextStep = safestNextStep;
     }
 
     public Long getId() {
@@ -95,6 +116,18 @@ public class Transaction {
 
     public double getRiskScore() {
         return riskScore;
+    }
+
+    public String getRiskLevel() {
+        return riskLevel;
+    }
+
+    public String getWhatChanged() {
+        return whatChanged;
+    }
+
+    public String getSafestNextStep() {
+        return safestNextStep;
     }
 
     public LocalDateTime getCreatedAt() {
