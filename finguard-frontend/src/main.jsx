@@ -37,6 +37,59 @@ const initialTransactionForm = {
   transactionTime: new Date().toISOString().slice(0, 16),
 };
 
+function getSafetyRead(transaction) {
+  if (!transaction) {
+    return {
+      riskLevel: 'Stable',
+      whatChanged: 'FinGuard is ready to monitor your first transaction.',
+      safestNextStep: 'Add a transaction to establish your baseline.',
+    };
+  }
+
+  const riskScore = Number(transaction.riskScore || 0);
+  const riskPercent = Math.round(riskScore * 100);
+  const derivedLevel = deriveRiskLevel(transaction);
+  const staleStableCopy = transaction.flagged && transaction.riskLevel === 'Stable';
+  const whatChanged =
+    transaction.whatChanged && !staleStableCopy
+      ? transaction.whatChanged
+      : transaction.flagged
+        ? `${derivedLevel} signal: ${transaction.merchant} was flagged with a ${riskPercent}% risk score in ${transaction.category}.`
+        : 'Stable signal: this transaction is close to your normal pattern.';
+  const safestNextStep =
+    transaction.safestNextStep && !staleStableCopy
+      ? transaction.safestNextStep
+      : getNextStepForLevel(derivedLevel);
+
+  return {
+    riskLevel: derivedLevel,
+    whatChanged,
+    safestNextStep,
+  };
+}
+
+function deriveRiskLevel(transaction) {
+  const riskScore = Number(transaction?.riskScore || 0);
+  if (!transaction?.flagged && transaction?.riskLevel) return transaction.riskLevel;
+  if (riskScore >= 0.75) return 'Urgent';
+  if (riskScore >= 0.55) return 'Attention';
+  if (riskScore >= 0.35 || transaction?.flagged) return 'Watch';
+  return 'Stable';
+}
+
+function getNextStepForLevel(riskLevel) {
+  if (riskLevel === 'Urgent') {
+    return 'Verify the merchant now. If this was not you, freeze the card and contact support.';
+  }
+  if (riskLevel === 'Attention') {
+    return 'Check the receipt and merchant. Mark it expected only if you recognize the charge.';
+  }
+  if (riskLevel === 'Watch') {
+    return 'Keep this on your watchlist and compare it with nearby transactions before spending more.';
+  }
+  return 'No action needed; keep monitoring for changes.';
+}
+
 function apiRequest(path, { token, method = 'GET', body } = {}) {
   const headers = { 'Content-Type': 'application/json' };
   if (token) {
@@ -77,7 +130,8 @@ function App() {
   );
 
   const latestSignal = transactions[0];
-  const safetyState = latestSignal?.riskLevel || (flaggedCount > 0 ? 'Attention' : 'Stable');
+  const latestSafetyRead = getSafetyRead(latestSignal);
+  const safetyState = latestSignal ? latestSafetyRead.riskLevel : flaggedCount > 0 ? 'Attention' : 'Stable';
 
   const totalVisibleSpend = useMemo(
     () => transactions.reduce((sum, transaction) => sum + Number(transaction.amount), 0),
@@ -214,7 +268,7 @@ function App() {
           />
         </section>
 
-        <SafetyBrief transaction={latestSignal} totalVisibleSpend={totalVisibleSpend} />
+        <SafetyBrief transaction={latestSignal} safetyRead={latestSafetyRead} totalVisibleSpend={totalVisibleSpend} />
 
         <section className="content-grid">
           <TransactionForm onSubmit={createTransaction} loading={loading} />
@@ -362,7 +416,7 @@ function Metric({ icon, label, value, tone }) {
   );
 }
 
-function SafetyBrief({ transaction, totalVisibleSpend }) {
+function SafetyBrief({ transaction, safetyRead, totalVisibleSpend }) {
   const hasSignal = Boolean(transaction);
   return (
     <section className={`safety-brief ${transaction?.flagged ? 'alert' : ''}`}>
@@ -372,12 +426,12 @@ function SafetyBrief({ transaction, totalVisibleSpend }) {
         </div>
         <div>
           <p className="eyebrow">Latest safety read</p>
-          <h3>{hasSignal ? transaction.whatChanged : 'FinGuard is ready to monitor your first transaction.'}</h3>
+          <h3>{safetyRead.whatChanged}</h3>
         </div>
       </div>
       <div className="brief-action">
         <span>Safest next step</span>
-        <strong>{hasSignal ? transaction.safestNextStep : 'Add a transaction to establish your baseline.'}</strong>
+        <strong>{hasSignal ? safetyRead.safestNextStep : 'Add a transaction to establish your baseline.'}</strong>
       </div>
       <div className="brief-stat">
         <span>Visible spend watched</span>
@@ -450,6 +504,7 @@ function TransactionForm({ onSubmit, loading }) {
 
 function RiskPanel({ transactions }) {
   const latest = transactions[0];
+  const safetyRead = getSafetyRead(latest);
   return (
     <section className="panel risk-panel">
       <div className="section-heading">
@@ -460,16 +515,16 @@ function RiskPanel({ transactions }) {
         <span>{latest ? Math.round(latest.riskScore * 100) : 0}</span>
       </div>
       <div className="risk-copy">
-        <strong>{latest?.riskLevel || 'Stable'} risk score</strong>
+        <strong>{safetyRead.riskLevel} risk score</strong>
         <p>{latest ? `${latest.merchant} · ${latest.category}` : 'No transactions yet'}</p>
       </div>
       <div className="next-step-card">
         <span>What changed</span>
-        <strong>{latest?.whatChanged || 'No unusual change detected yet.'}</strong>
+        <strong>{safetyRead.whatChanged}</strong>
       </div>
       <div className="next-step-card">
         <span>Next step</span>
-        <strong>{latest?.safestNextStep || 'Start monitoring by adding a transaction.'}</strong>
+        <strong>{safetyRead.safestNextStep}</strong>
       </div>
     </section>
   );
@@ -501,21 +556,24 @@ function TransactionTable({ transactions, loading }) {
                 <td colSpan="7" className="empty-cell">No transactions</td>
               </tr>
             ) : (
-              transactions.map((transaction) => (
-                <tr key={transaction.id}>
-                  <td>{transaction.merchant}</td>
-                  <td>{transaction.category}</td>
-                  <td>{formatDate(transaction.transactionTime)}</td>
-                  <td>{formatMoney(transaction.amount)}</td>
-                  <td>{transaction.riskLevel || 'Stable'}</td>
-                  <td>{Math.round(transaction.riskScore * 100)}%</td>
-                  <td>
-                    <span className={transaction.flagged ? 'pill alert' : 'pill ok'}>
-                      {transaction.flagged ? 'Flagged' : 'Clear'}
-                    </span>
-                  </td>
-                </tr>
-              ))
+              transactions.map((transaction) => {
+                const safetyRead = getSafetyRead(transaction);
+                return (
+                  <tr key={transaction.id}>
+                    <td>{transaction.merchant}</td>
+                    <td>{transaction.category}</td>
+                    <td>{formatDate(transaction.transactionTime)}</td>
+                    <td>{formatMoney(transaction.amount)}</td>
+                    <td>{safetyRead.riskLevel}</td>
+                    <td>{Math.round(transaction.riskScore * 100)}%</td>
+                    <td>
+                      <span className={transaction.flagged ? 'pill alert' : 'pill ok'}>
+                        {transaction.flagged ? 'Review' : 'Clear'}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
